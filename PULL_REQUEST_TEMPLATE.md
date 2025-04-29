@@ -1,32 +1,46 @@
 # 📌 Títol de la Pull Request
-Descripció breu del canvi o funcionalitat afegida.
+<!-- Ex: Configuració bàsica del servidor Openfire -->
 
 ---
 
 ## 🛠️ Què s’ha fet
 
-- Explica en 2-3 frases què has canviat, afegit o configurat.
-- Si és una part d'una etapa del projecte (per exemple, VoIP, Jabber, etc.), indica-ho aquí.
+<!--
+Ex:
+- Instal·lat i configurat Openfire al servidor amb IP 172.30.15.10
+- Creat comptes d'usuari amb format nom@grupg.loc
+- Verificat accés des de client Spark
+-->
 
 ---
 
 ## 🔍 Com provar-ho
 
-Passos senzills per provar que funciona:
-1. ...
-2. ...
-3. ...
+<!--
+Ex:
+1. Obrir el navegador i accedir a http://172.30.15.10:9090
+2. Iniciar sessió amb un usuari creat (ex: anna@grupg.loc)
+3. Fer proves d'enviament de missatges entre dos clients Spark
+-->
 
 ---
 
 ## ✅ Verificació
 
 - [ ] Funciona com s’esperava
-- [ ] Provat amb companys o softphones (si és el cas)
+- [ ] Provat amb companys o dispositius
 - [ ] La configuració segueix l’esquema de xarxa
+
+<!--
+Marca amb una X les opcions que s'han completat.
+-->
 
 ---
 
 ## 💬 Notes o dubtes
 
-(Opcional – comenta si hi ha alguna cosa a revisar o preguntar)
+<!--
+Ex:
+- El client Linphone a Android no es connectava per problema de ports.
+- Falten alguns usuaris per crear però la configuració bàsica ja funciona.
+-->
