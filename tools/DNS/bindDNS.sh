@@ -42,6 +42,8 @@ if [ -f $ZONE_FILE ]; then
     log_error "El archivo de zona '$ZONE_FILE' ya existe. Por favor, elimina el archivo o revisa permisos."
 fi
 
+# Mejora, que cree a partir de un excel
+
 cat << EOF | sudo tee $ZONE_FILE > /dev/null
 \$TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
 $DOMAIN. IN SOA ns1.$DOMAIN. $USER.$DOMAIN. (
@@ -61,9 +63,9 @@ $DOMAIN. IN A $IP
 ns1.$DOMAIN. IN A $NS1
 www.$DOMAIN. IN A $IP
 zimbra.$DOMAIN. IN A $IP
-openfire.$DOMAIN. IN A $IP
-jellyfin.$DOMAIN. IN A $IP
-vozip.$DOMAIN. IN A $IP
+openfire.$DOMAIN. IN A 172.30.15.219
+jellyfin.$DOMAIN. IN A 172.30.15.119
+vozip.$DOMAIN. IN A 172.30.15.13
 EOF
 
 if [ $? -ne 0 ]; then
