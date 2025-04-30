@@ -2,12 +2,12 @@
 
 # Definir archivo de log
 LOGFILE="/var/log/Project/installation.log"
-DOMAIN="fatlangang-tv.com"
+DOMAIN="fatlangang.com"
 # LA ip es la del router publica, porque es donde està el reverse proxy, si el reverse proxy estubiera en otro aldo seria aputnado al Reverse Proxy
-DNS_RESOLV_IP=172.30.15.19
+DNS_RESOLV_IP=172.30.15.219
 # Como principal ponemos el que se ve des del exterior
 NS1=$DNS_RESOLV_IP
-USER="lucxf"
+USER="fatlangang"
 BIND_FOLDER_PATH="/etc/bind/"
 
 # Función para registrar mensajes en el log y mostrar los errores en pantalla
