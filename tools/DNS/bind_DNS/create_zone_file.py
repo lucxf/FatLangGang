@@ -32,7 +32,7 @@ class CreateBind():
         self.lines_with_cells = lines_with_cells
         self.ns_in_domain_lines = []
         self.address_lines = []
-        self.file_content = """
+        self.file_content = f"""
 $TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
 {DOMAIN}. IN SOA ns1.{DOMAIN}. {USER}.{DOMAIN}. (
     2023110701 ; Serial
