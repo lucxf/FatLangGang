@@ -91,4 +91,6 @@ def main():
     file_content = create_bind.create_file_content()
     create_bind.write_file(file_content, FILE_PATH)
 
+    print(f"ZONE FILE PATH: {FILE_PATH}")
+
 main()
