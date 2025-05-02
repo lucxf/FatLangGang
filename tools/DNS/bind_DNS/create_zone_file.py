@@ -1,7 +1,7 @@
 import sys
 
-DOMAIN=sys.argv[1]
-USER=sys.argv[2]
+DOMAIN=sys.argv[0]
+USER=sys.argv[1]
 FILE_PATH=f'/etc/bind/{DOMAIN}'
 
 class ReadExcel():
@@ -9,7 +9,7 @@ class ReadExcel():
         self.excel_path = excel_path
     
     def read_lines(self):
-        registry_file = open('registry.csv', 'r')
+        registry_file = open('./tools/DNS/bind_DNS/registry.csv', 'r')
         file_lines = registry_file.readlines()
 
         return file_lines
