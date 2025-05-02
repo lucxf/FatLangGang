@@ -23,10 +23,10 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 # Comprobar si el directorio actual termina en FATLANGANG
-if [[ "$(pwd)" != *FatLanGang ]]; then
-    echo -e "\033[31mERROR: Este script debe ejecutarse desde un directorio que termine en 'FATLANGANG'.\033[0m"
-    exit 1
-fi
+# if [[ "$(pwd)" != *FatLanGang ]]; then
+#     echo -e "\033[31mERROR: Este script debe ejecutarse desde un directorio que termine en 'FATLANGANG'.\033[0m"
+#     exit 1
+# fi
 
 # Antes de instalar la herramienta, actualizamos los paquetes disponibles en los repositorios
 echo -e "\033[34mActualizando los paquetes disponibles en los repositorios...\033[0m"
