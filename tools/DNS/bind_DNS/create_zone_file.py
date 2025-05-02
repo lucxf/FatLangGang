@@ -75,7 +75,7 @@ $TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
         return self.file_content
     
     def write_file(self, file_content, FILE_PATH):
-        bind_file = open('bind_file.txt', 'w')
+        bind_file = open('FILE_PATH', 'w')
         bind_file.write(file_content)
 
 
