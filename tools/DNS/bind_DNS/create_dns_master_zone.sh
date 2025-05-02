@@ -15,7 +15,7 @@ fi
 
 # Mejora, que cree a partir de un excel
 
-if ! python3 create_zone_file.py $DOMAIN $USER; then
+if ! python3 ./tools/DNS/bind_DNS/create_zone_file.py $DOMAIN $USER; then
     log_error "Error crear archivo de zona con python"
 fi
 
