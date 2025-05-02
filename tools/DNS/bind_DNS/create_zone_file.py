@@ -1,7 +1,7 @@
 import sys
 
-DOMAIN=sys.argv[0]
-USER=sys.argv[1]
+DOMAIN=sys.argv[1]
+USER=sys.argv[2]
 FILE_PATH=f'/etc/bind/{DOMAIN}'
 
 class ReadExcel():
