@@ -1,6 +1,7 @@
 #!/bin/bash
 
 DOMAIN=$1
+USER=$2
 ZONE_FILE="/etc/bind/$DOMAIN"
 
 # Configuración de la zona DNS

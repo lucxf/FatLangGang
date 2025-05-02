@@ -4,6 +4,7 @@
 LOGFILE="/var/log/Project/installation.log"
 BIND_FOLDER_PATH="/etc/bind/"
 DOMAIN="fatlangang.com"
+USER="lucxf"
 # Función para registrar mensajes en el log y mostrar los errores en pantalla
 log_error() {
     # Registrar el error en el archivo de log
@@ -66,7 +67,7 @@ fi
 
 log_info "Creando la zona de DNS..."
 chmod +x ./tools/DNS/bind_DNS/create_dns_master_zone.sh
-if ! sudo ./tools/DNS/bind_DNS/create_dns_master_zone.sh; then
+if ! sudo ./tools/DNS/bind_DNS/create_dns_master_zone.sh $DOMAIN $USER; then
     rm -r $BIND_FOLDER_PATH
     rm -r /var/cache/bind/
     apt purge bind9 bind9utils bind9-doc -y
