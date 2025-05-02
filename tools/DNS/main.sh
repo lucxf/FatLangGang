@@ -68,8 +68,8 @@ fi
 log_info "Creando la zona de DNS..."
 chmod +x ./tools/DNS/bind_DNS/create_dns_master_zone.sh
 if ! sudo ./tools/DNS/bind_DNS/create_dns_master_zone.sh $DOMAIN $USER; then
-    rm -r $BIND_FOLDER_PATH
-    rm -r /var/cache/bind/
-    apt purge bind9 bind9utils bind9-doc -y
+    # rm -r $BIND_FOLDER_PATH
+    # rm -r /var/cache/bind/
+    # apt purge bind9 bind9utils bind9-doc -y
     log_error "Error al crear la zona de DNS."
 fi
