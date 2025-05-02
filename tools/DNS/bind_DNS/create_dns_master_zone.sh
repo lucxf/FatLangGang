@@ -6,6 +6,15 @@ ZONE_FILE="/etc/bind/$DOMAIN"
 
 # Configuración de la zona DNS
 
+log_error() {
+    # Registrar el error en el archivo de log
+    echo "$(date) - ERROR: $1" | tee -a $LOGFILE
+    # Mostrar el error en la terminal en rojo
+    echo -e "\033[31m$(date) - ERROR: $1\033[0m"
+    # Detener la ejecución del script
+    exit 1
+}
+
 # Creamos el archivo de zona para '$DOMAIN'
 echo -e "\033[34mCreando el archivo de zona DNS\033[0m"
 
