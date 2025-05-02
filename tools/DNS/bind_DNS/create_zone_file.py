@@ -4,6 +4,8 @@ DOMAIN=sys.argv[1]
 USER=sys.argv[2]
 FILE_PATH=f'/etc/bind/{DOMAIN}'
 
+print(f"DOMAIN: {DOMAIN}")
+print(f"USER: {USER}")
 class ReadExcel():
     def __init__(self,excel_path):
         self.excel_path = excel_path
