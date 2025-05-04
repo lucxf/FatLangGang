@@ -68,7 +68,7 @@ $TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
         # NS1 == DNS SERVER
         if line[0] == "ns1":
 
-            line_content = f"{DOMAIN}. IN A {line[2]}"
+            line_content = f"{DOMAIN}. IN A {line[2]}\n"
 
         line_content += f"{line[0]}.{DOMAIN}. IN A {line[2]}"
 
