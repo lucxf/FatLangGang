@@ -1,21 +1,23 @@
 import sys
 
-DOMAIN=sys.argv[1]
-USER=sys.argv[2]
-FILE_PATH=f'/etc/bind/{DOMAIN}'
+DOMAIN    = sys.argv[1]
+USER      = sys.argv[2]
+FILE_PATH = f'/etc/bind/{DOMAIN}'
 
 print(f"DOMAIN: {DOMAIN}")
 print(f"USER: {USER}")
+
+
 class ReadExcel():
-    def __init__(self,excel_path):
+    def __init__(self, excel_path):
         self.excel_path = excel_path
-    
+
     def read_lines(self):
         registry_file = open('./tools/DNS/registry.csv', 'r')
         file_lines = registry_file.readlines()
 
         return file_lines
-    
+
     def split_cells(self, file_lines):
 
         lines_with_cells = []
@@ -23,7 +25,7 @@ class ReadExcel():
         for file_line in file_lines:
             line_cells = file_line.strip().split(";")
             lines_with_cells.append(line_cells)
-        
+
         return lines_with_cells
 
 
@@ -42,9 +44,9 @@ $TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
     38400      ; Minimum TTL
 )
 """
-    
+
     def detect_registry_type(self):
-        
+
         for line in self.lines_with_cells:
             if line[1] == 'A':
                 self.a_registry(line)
@@ -53,19 +55,25 @@ $TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
                 self.a_registry(line)
 
     def ns_registry(self, line):
+
+        line_content = ""
+
         line_content = f"{DOMAIN}. IN NS {line[0]}.{DOMAIN}."
 
         self.ns_in_domain_lines.append(line_content)
 
-        print(self.ns_in_domain_lines)
-
     def a_registry(self, line):
-        line_content = f"{line[0]}.{DOMAIN}. IN A {line[2]}"
+
+        line_content = ""
+        # NS1 == DNS SERVER
+        if line[0] == "ns1":
+
+            line_content = f"{DOMAIN}. IN A {line[2]}"
+
+        line_content += f"{line[0]}.{DOMAIN}. IN A {line[2]}"
 
         self.address_lines.append(line_content)
 
-        print(self.address_lines)
-        
     def create_file_content(self):
 
         for line in self.ns_in_domain_lines:
@@ -75,7 +83,7 @@ $TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
             self.file_content += f"{line}\n"
 
         return self.file_content
-    
+
     def write_file(self, file_content, FILE_PATH):
         bind_file = open(FILE_PATH, 'w+')
         bind_file.write(file_content)
@@ -93,6 +101,8 @@ def main():
     file_content = create_bind.create_file_content()
     create_bind.write_file(file_content, FILE_PATH)
 
+    print("\033[92mMASTER ZONE CORRECTLY CREATED\033[0m")
     print(f"ZONE FILE PATH: {FILE_PATH}")
+
 
 main()
