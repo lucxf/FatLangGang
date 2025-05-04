@@ -9,6 +9,7 @@ log_error() {
     echo "$(date) - ERROR: $1" | tee -a $LOGFILE
     # Mostrar el error en la terminal en rojo
     echo -e "\033[31m$(date) - ERROR: $1\033[0m"
+    sudo apt purge -y bind9 bind9utils bind9-doc
     # Detener la ejecución del script
     exit 1
 }
