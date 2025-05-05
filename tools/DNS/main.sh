@@ -2,14 +2,9 @@
 
 # Definir archivo de log
 LOGFILE="/var/log/Project/installation.log"
-DOMAIN="fatlangang.com"
-# LA ip es la del router publica, porque es donde està el reverse proxy, si el reverse proxy estubiera en otro aldo seria aputnado al Reverse Proxy
-DNS_RESOLV_IP=172.30.15.219
-# Como principal ponemos el que se ve des del exterior
-NS1=$DNS_RESOLV_IP
-USER="fatlangang"
 BIND_FOLDER_PATH="/etc/bind/"
-
+DOMAIN="fatlangang.com"
+USER="lucxf"
 # Función para registrar mensajes en el log y mostrar los errores en pantalla
 log_error() {
     # Registrar el error en el archivo de log
@@ -33,6 +28,12 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+# Comprobar si el directorio actual termina en FATLANGANG
+# if [[ "$(pwd)" != *FatLanGang ]]; then
+#     echo -e "\033[31mERROR: Este script debe ejecutarse desde un directorio que termine en 'FATLANGANG'.\033[0m"
+#     exit 1
+# fi
+
 # Creamos los directorios necesarios
 mkdir -p /var/log/Project
 
@@ -45,19 +46,28 @@ else
     echo "❌ Webmin NO está instalado en el sistema."
     # Empezamos la instalación de Webmin
     log_info "Instalando Webmin..."
-    chmod +x ./webmin_install.sh
-    if ! sudo ./webmin_install.sh; then
+    chmod +x ./tools/webmin/webmin_install.sh
+    if ! sudo ./tools/webmin/webmin_install.sh; then
         log_error "Error al instalar Webmin."
         log_info "Borrando todo lo instalado..."
-        chmod +x ./BORRAR/borrar_webmin.sh
-        sudo ./BORRAR/borrar_webmin.sh
+        chmod +x ./tools/webmin/uninstall_webmin/uninstall_webmin.sh
+        sudo ./tools/webmin/uninstall_webmin/uninstall_webmin.sh
     fi
 fi
 
 # Creamos la zona de DNS
+log_info "Instalando bind DNS..."
+chmod +x ./tools/DNS/bind_DNS/bind_dns_install.sh
+if ! sudo ./tools/DNS/bind_DNS/bind_dns_install.sh; then
+    rm -r $BIND_FOLDER_PATH
+    rm -r /var/cache/bind/
+    apt purge bind9 bind9utils bind9-doc -y
+    log_error "Error al instalar bind DNS."
+fi
+
 log_info "Creando la zona de DNS..."
-chmod +x ./bindDNS.sh
-if ! sudo ./bindDNS.sh $DOMAIN $NS1 $DNS_RESOLV_IP $USER; then
+chmod +x ./tools/DNS/bind_DNS/create_dns_master_zone.sh
+if ! sudo ./tools/DNS/bind_DNS/create_dns_master_zone.sh $DOMAIN $USER; then
     rm -r $BIND_FOLDER_PATH
     rm -r /var/cache/bind/
     apt purge bind9 bind9utils bind9-doc -y

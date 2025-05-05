@@ -9,9 +9,24 @@ log_error() {
     echo "$(date) - ERROR: $1" | tee -a $LOGFILE
     # Mostrar el error en la terminal en rojo
     echo -e "\033[31m$(date) - ERROR: $1\033[0m"
+    # Borrar la instalación de Webmin
+    chmod +x ./tools/webmin/uninstall_webmin/uninstall_webmin.sh
+    sudo ./tools/webmin/uninstall_webmin/uninstall_webmin.sh
     # Detener la ejecución del script
     exit 1
 }
+
+# Comprobar si el usuario es root
+if [ "$(id -u)" -ne 0 ]; then
+    echo -e "\033[31mERROR: Este script debe ejecutarse como usuario root.\033[0m"
+    exit 1
+fi
+
+# Comprobar si el directorio actual termina en FATLANGANG
+# if [[ "$(pwd)" != *FatLanGang ]]; then
+#     echo -e "\033[31mERROR: Este script debe ejecutarse desde un directorio que termine en 'FATLANGANG'.\033[0m"
+#     exit 1
+# fi
 
 # Antes de instalar la herramienta, actualizamos los paquetes disponibles en los repositorios
 echo -e "\033[34mActualizando los paquetes disponibles en los repositorios...\033[0m"
