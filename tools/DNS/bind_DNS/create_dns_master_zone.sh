@@ -114,7 +114,7 @@ if ! sudo ufw status; then
     log_error "Error al verificar el estado del firewall."
 fi
 
-systemclt restart webmin
+systemctl restart webmin
 
 # Mensaje de éxito en verde
 echo -e "\033[32mZona DNS creada correctamente.\033[0m"
