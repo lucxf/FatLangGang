@@ -1,10 +1,8 @@
 import sys
 
-# DOMAIN    = sys.argv[1]
-# USER      = sys.argv[2]
-DOMAIN = "test.lan.local"
-USER = "lucxf"
-FILE_PATH = f'./{DOMAIN}'
+DOMAIN    = sys.argv[1]
+USER      = sys.argv[2]
+FILE_PATH = f'/etc/bind/{DOMAIN}'
 
 print(f"DOMAIN: {DOMAIN}")
 print(f"USER: {USER}")
