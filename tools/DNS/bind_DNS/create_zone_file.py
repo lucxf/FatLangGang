@@ -91,7 +91,7 @@ $TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
         # cuanto mas bajo el numero, mas prioridad
         line_content += f"@            IN MX {priority} {line[0]}.{DOMAIN}.\n"
         line_content += f"autodiscover IN CNAME         {line[0]}.{DOMAIN}.\n"
-        line_content += f"autoconfig   IN CNAME         {line[0]}.{DOMAIN}.\n"
+        line_content += f"autoconfig   IN CNAME         {line[0]}.{DOMAIN}."
 
         self.ns_in_domain_lines.append(line_content)
 
