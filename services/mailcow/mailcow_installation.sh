@@ -41,7 +41,7 @@ fi
 
 # Ejecutar el script de instalación de Mailcow
 log_info "Ejecutando el script de instalación de Mailcow..."
-if ! cd /opt/mailcow-dockerized && ! ./generate_config.sh; then
+if ! /opt/mailcow-dockerized/generate_config.sh; then
     log_error "Error al ejecutar el script de instalación de Mailcow."
 fi
 
