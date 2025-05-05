@@ -35,7 +35,7 @@ fi
 
 # Instalar Mailcow
 log_info "Clonando repositorio de Mailcow..."
-if ! cd /opt/ && ! git clone https://github.com/mailcow/mailcow-dockerized; then
+if ! git clone https://github.com/mailcow/mailcow-dockerized /opt; then
     log_error "Error al clonar el repositorio de Mailcow."
 fi
 
