@@ -1,8 +1,10 @@
 import sys
 
-DOMAIN    = sys.argv[1]
-USER      = sys.argv[2]
-FILE_PATH = f'/etc/bind/{DOMAIN}'
+# DOMAIN    = sys.argv[1]
+# USER      = sys.argv[2]
+DOMAIN = "test.lan.local"
+USER = "lucxf"
+FILE_PATH = f'./{DOMAIN}'
 
 print(f"DOMAIN: {DOMAIN}")
 print(f"USER: {USER}")
@@ -53,6 +55,9 @@ $TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
             elif line[1] == 'NS':
                 self.ns_registry(line)
                 self.a_registry(line)
+            elif line[1] == 'MX':
+                self.a_registry(line)
+                self.mx_registry(line)
 
     def ns_registry(self, line):
 
@@ -61,6 +66,8 @@ $TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
         line_content = f"{DOMAIN}. IN NS {line[0]}.{DOMAIN}."
 
         self.ns_in_domain_lines.append(line_content)
+
+        print(f"\033[33mNS REGISTRY CREATED: \033[0m {line[0]}.{DOMAIN}")
 
     def a_registry(self, line):
 
@@ -73,6 +80,22 @@ $TTL 38400  ; Tiempo (seg) de vida por defecto (TTL)
         line_content += f"{line[0]}.{DOMAIN}. IN A {line[2]}"
 
         self.address_lines.append(line_content)
+
+        print(f"\033[33mADDRESS REGISTRY CREATED: \033[0m {line[0]}.{DOMAIN} \033[33mIP: \033[0m {line[2]}")
+
+    def mx_registry(self, line):
+
+        line_content = ""
+        # Solo registro MX tiene la prioridad al final
+        priority = line[3]
+        # cuanto mas bajo el numero, mas prioridad
+        line_content += f"@            IN MX {priority} {line[0]}.{DOMAIN}.\n"
+        line_content += f"autodiscover IN CNAME         {line[0]}.{DOMAIN}.\n"
+        line_content += f"autoconfig   IN CNAME         {line[0]}.{DOMAIN}.\n"
+
+        self.ns_in_domain_lines.append(line_content)
+
+        print(f"\033[33mMAIL REGISTRY CREATED: \033[0m @{line[0]}.{DOMAIN} \033[33mPRIORITY: \033[0m {priority}")
 
     def create_file_content(self):
 
