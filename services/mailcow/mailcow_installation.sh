@@ -50,7 +50,7 @@ if ! /opt/mailcow-dockerized/generate_config.sh; then
 fi
 
 log_info "Iniciando Mailcow..."
-if ! dokcer compose -f docker-compose.yml up -d; then
+if ! docker compose -f docker-compose.yml up -d; then
     log_error "Error al iniciar Mailcow."
 fi
 
