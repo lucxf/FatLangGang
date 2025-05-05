@@ -1,4 +1,7 @@
-SUBDOMAIN;REGISTRY;POINTS
-ns1;NS;127.0.0.1
-www;A;127.0.0.1
-test;A;127.0.0.1
+SUBDOMAIN;REGISTRY;POINTS;(Priority)
+ns1;NS;172.30.15.219;
+mailcow;A;172.30.15.19;
+openfire;A;172.30.15.219;
+jellyfin;A;172.30.15.119;
+vozip;A;172.30.15.10;
+mail;MX;172.30.15.19;10
