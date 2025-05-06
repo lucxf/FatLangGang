@@ -30,6 +30,7 @@ fi
 log_info "Comprobando si docker y docker-compose estan instalados..."
 # Comprobar si docker y docker-compose están instalados
 if ! command -v docker &> /dev/null && ! command -v docker-compose &> /dev/null; then
+    chmod +x ./tools/docker/docker_installation.sh
     ./tools/docker/docker_installation.sh
 fi
 
