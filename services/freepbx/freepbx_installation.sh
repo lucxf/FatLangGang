@@ -32,7 +32,7 @@ is_installed_freepbx(){
         wget $SCRIPT_URL
         log_info "Ejecutando script de instalación 👀"
         bash $SCRIPT_PATH
-        
+
         if [$? -eq 0]; then
             log_info log_info "El script de instalación se ejecutó correctamente ✅"
         else
@@ -40,3 +40,4 @@ is_installed_freepbx(){
         fi
 }
 
+is_installed_freepbx()
