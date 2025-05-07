@@ -50,8 +50,8 @@ if ! /opt/mailcow-dockerized/generate_config.sh; then
     log_error "Error al ejecutar el script de instalación de Mailcow."
 fi
 
-log_info "Iniciando Mailcow..."
-if ! docker compose -f /opt/mailcow-dockerized/docker-compose.yml up -d; then
-    log_error "Error al iniciar Mailcow."
-fi
+# log_info "Iniciando Mailcow..."
+# if ! docker compose -f /opt/mailcow-dockerized/docker-compose.yml up -d; then
+#     log_error "Error al iniciar Mailcow."
+# fi
 
