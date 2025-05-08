@@ -24,7 +24,7 @@ log_info() {
 
 # Función para verificar si FreePBX está instalado
 is_installed_freepbx(){
-    log_info "Iniciando verificación de si FreePBX está instalado..."
+    log_info "Iniciando verificación de si FreePBX está instalado...🥸"
 
     # Verificar si FreePBX está instalado
     if [ -n "$(dpkg -l | grep freepbx | head -n 1)" ]; then
@@ -36,10 +36,10 @@ is_installed_freepbx(){
         # Descargar el script de instalación
         wget $SCRIPT_URL -O $SCRIPT_PATH
         if [ $? -ne 0 ]; then
-            log_error "No se pudo descargar el script de instalación. Verifica la conexión a internet o la URL."
+            log_error "No se pudo descargar el script de instalación. Verifica la conexión a internet o la URL.❌"
         fi
 
-        log_info "Ejecutando script de instalación 👀"
+        log_info "Ejecutando script de instalación...👀"
         
         # Ejecutar el script de instalación
         bash $SCRIPT_PATH
@@ -51,6 +51,5 @@ is_installed_freepbx(){
     fi
 }
 
-log_info "Iniciando el proceso de verificación de FreePBX..."
 is_installed_freepbx
-log_info "Proceso finalizado."
+log_info "Proceso finalizado.🧙‍♂️"
