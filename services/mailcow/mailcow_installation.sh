@@ -29,28 +29,22 @@ fi
 
 log_info "Comprobando si docker y docker-compose estan instalados..."
 # Comprobar si docker y docker-compose están instalados
-if ! command -v docker &> /dev/null && ! command -v docker-compose &> /dev/null; then
+if ! docker --version &> /dev/null; then
+    chmod +x ./tools/docker/docker_installation.sh
     ./tools/docker/docker_installation.sh
 fi
 
-# Instalar Mailcow
-log_info "Clonando repositorio de Mailcow..."
-if ! git clone https://github.com/mailcow/mailcow-dockerized; then
-    log_error "Error al clonar el repositorio de Mailcow."
+log_info "Descargando el repositorio de mailcow..."
+if ! git clone https://github.com/mailcow/mailcow-dockerized.git; then
+    log_info "Error al descargar el repositorio de mailcow"
 fi
 
-if ! mv mailcow-dockerized /opt/; then
-    log_error "Error al mover el repositorio de Mailcow."
+log_info "generando archivo de configuracion..."
+if ! ./mailcow-dockerized/generate_config.sh; then
+    log_info "Error al generar el archivo de configuracion"
 fi
 
-# Ejecutar el script de instalación de Mailcow
-log_info "Ejecutando el script de instalación de Mailcow..."
-if ! /opt/mailcow-dockerized/generate_config.sh; then
-    log_error "Error al ejecutar el script de instalación de Mailcow."
+log_info "Iniciando mailcow..."
+if ! docker compose -f ./mailcow-dockerized/docker-compose.yml up -d; then
+    log_info "Error al iniciar mailcow"
 fi
-
-log_info "Iniciando Mailcow..."
-if ! dokcer compose -f docker-compose.yml up -d; then
-    log_error "Error al iniciar Mailcow."
-fi
-
