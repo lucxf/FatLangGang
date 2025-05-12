@@ -2,6 +2,7 @@
 
 # Archivo de log
 LOGFILE="/var/log/Project/mailcow_installation.log"
+MAILCOW_CONF_DIR="/etc/mailcow-docker-config"
 
 # Función para escribir errores en el log y mostrar el mensaje en rojo
 log_error() {
@@ -27,6 +28,8 @@ if [ "$(id -u)" -ne 0 ]; then
     exit 1
 fi
 
+mkdir -p $MAILCOW_CONF_DIR
+
 log_info "Comprobando si docker y docker-compose estan instalados..."
 # Comprobar si docker y docker-compose están instalados
 if ! docker --version &> /dev/null; then
@@ -39,14 +42,18 @@ if ! git clone https://github.com/mailcow/mailcow-dockerized.git; then
     log_info "Error al descargar el repositorio de mailcow"
 fi
 
-mv mailcow-dockerized ../
+mv mailcow-dockerized $MAILCOW_CONF_DIR
+
+cd $MAILCOW_CONF_DIR 
+log_info "DIRECTORIO ACTUAL"
+pwd
 
 log_info "generando archivo de configuracion..."
-if ! ../mailcow-dockerized/generate_config.sh; then
+if ! ./mailcow-dockerized/generate_config.sh; then
     log_info "Error al generar el archivo de configuracion"
 fi
 
 log_info "Iniciando mailcow..."
-if ! docker compose -f ../mailcow-dockerized/docker-compose.yml up -d; then
+if ! docker compose -f ./mailcow-dockerized/docker-compose.yml up -d; then
     log_info "Error al iniciar mailcow"
 fi
