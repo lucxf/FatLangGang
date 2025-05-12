@@ -47,13 +47,13 @@ mv mailcow-dockerized $MAILCOW_CONF_DIR
 cd $MAILCOW_CONF_DIR 
 log_info "DIRECTORIO ACTUAL"
 pwd
-
+cd mailcow-dockerized
 log_info "generando archivo de configuracion..."
-if ! ./mailcow-dockerized/generate_config.sh; then
+if ! ./generate_config.sh; then
     log_info "Error al generar el archivo de configuracion"
 fi
 
 log_info "Iniciando mailcow..."
-if ! docker compose -f ./mailcow-dockerized/docker-compose.yml up -d; then
+if ! docker compose -f ./docker-compose.yml up -d; then
     log_info "Error al iniciar mailcow"
 fi
