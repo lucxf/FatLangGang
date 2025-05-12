@@ -32,7 +32,6 @@ mkdir -p $MAILCOW_CONF_DIR
 
 log_info "Comprobando si docker y docker-compose estan instalados..."
 # Comprobar si docker y docker-compose están instalados
-
 if ! docker --version &> /dev/null; then
     chmod +x ./tools/docker/docker_installation.sh
     ./tools/docker/docker_installation.sh
@@ -49,6 +48,7 @@ cd $MAILCOW_CONF_DIR
 log_info "DIRECTORIO ACTUAL"
 pwd
 cd mailcow-dockerized
+
 log_info "generando archivo de configuracion..."
 if ! ./generate_config.sh; then
     log_info "Error al generar el archivo de configuracion"
