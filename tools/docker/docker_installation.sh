@@ -17,16 +17,16 @@ log_error() {
 }
 
 # Eliminar archivos de paquetes .deb que ya no se pueden descargar
-# echo -e "\033[34mLimpiando paquetes obsoletos...\033[0m"
-# if ! sudo apt-get autoclean -y; then
-#     log_error "Error al ejecutar 'apt-get autoclean'."
-# fi
+echo -e "\033[34mLimpiando paquetes obsoletos...\033[0m"
+if ! sudo apt-get autoclean -y; then
+    log_error "Error al ejecutar 'apt-get autoclean'."
+fi
 
-# # Limpiar cualquier paquete obsoleto o dependencias innecesarias
-# echo -e "\033[34mLimpiando dependencias obsoletas...\033[0m"
-# if ! sudo apt-get autoremove -y; then
-#     log_error "Error al ejecutar 'apt-get autoremove'."
-# fi
+# Limpiar cualquier paquete obsoleto o dependencias innecesarias
+echo -e "\033[34mLimpiando dependencias obsoletas...\033[0m"
+if ! sudo apt-get autoremove -y; then
+    log_error "Error al ejecutar 'apt-get autoremove'."
+fi
 
 # Actualizar el sistema
 echo -e "\033[34mActualizando el sistema...\033[0m"
