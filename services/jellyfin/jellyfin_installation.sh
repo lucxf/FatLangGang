@@ -1,165 +1,185 @@
 #!/bin/bash
-# Archivo de log
-LOGFILE="/var/log/Project/jellyfin_installation.log"
-DOMAIN="jellyfin.local"
-DIR_PROJECT="/etc/jellyfin-caddy"
-EMAIL="admin@localhost"
 
-# Función para escribir errores en el log y mostrar el mensaje en rojo
+# Configuración básica
+PROJECT_NAME="jellyfin-local"
+BASE_DIR="/opt/${PROJECT_NAME}"
+CONFIG_DIR="${BASE_DIR}/config"
+MEDIA_DIR="${BASE_DIR}/media"
+
+# Colores para la salida
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # Sin color
+
+# Función de registro de errores
 log_error() {
-    echo "$(date) - ERROR: $1" | tee -a $LOGFILE
-    echo -e "\033[31m$(date) - ERROR: $1\033[0m"
-    exit 1
+    echo -e "${RED}[ERROR] $1${NC}" >&2
 }
 
+# Función de registro de información
 log_info() {
-    echo "$(date) - INFO: $1" | tee -a $LOGFILE
-    echo -e "\033[34m$(date) - INFO: $1\033[0m"
+    echo -e "${GREEN}[INFO] $1${NC}"
 }
 
-jellyfin_installation() {
-    # ==== .env ====
-    log_info "Creando archivo .env"
-    cat > .env <<EOF
-DOMAIN=$DOMAIN
-EMAIL=$EMAIL
-EOF
+# Función de registro de advertencia
+log_warning() {
+    echo -e "${YELLOW}[WARN] $1${NC}"
 }
 
-create_caddyfile() {
-    # ==== Caddyfile para entorno local ====
-    log_info "Creando archivo Caddyfile para entorno local"
-    cat > Caddyfile <<EOF
-$DOMAIN {
-    # Proxy a Jellyfin
-    reverse_proxy jellyfin:8096
+# Verificar si el script se ejecuta con privilegios de sudo
+check_sudo() {
+    if [[ $EUID -ne 0 ]]; then
+       log_error "Este script debe ejecutarse con sudo" 
+       exit 1
+    fi
+}
+
+# Preparar directorios
+prepare_directories() {
+    log_info "Preparando directorios de configuración y medios"
+    mkdir -p "${CONFIG_DIR}/jellyfin"
+    mkdir -p "${CONFIG_DIR}/caddy"
+    mkdir -p "${MEDIA_DIR}"
     
-    # Deshabilitar HTTPS para entorno local
-    @local host $DOMAIN
-    
-    # Configuración para desarrollo local
-    tls internal
-}
-EOF
+    # Establecer permisos
+    chown -R 1000:1000 "${CONFIG_DIR}/jellyfin"
+    chown -R 1000:1000 "${MEDIA_DIR}"
 }
 
+# Crear Docker Compose
 create_docker_compose() {
-    # ==== docker-compose.yml ====
     log_info "Creando archivo docker-compose.yml"
-    cat > docker-compose.yml <<'EOF'
+    cat > "${BASE_DIR}/docker-compose.yml" <<'EOF'
 version: '3.8'
 services:
   jellyfin:
-    image: jellyfin/jellyfin
+    image: jellyfin/jellyfin:latest
     container_name: jellyfin
+    user: 1000:1000
+    network_mode: host
     volumes:
-      - ./jellyfin_config:/config
-      - ./media:/media
-    expose:
-      - "8096"
-    networks:
-      - caddy_net
+      - ${CONFIG_DIR}/jellyfin:/config
+      - ${MEDIA_DIR}:/media
+      - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
+    environment:
+      - JELLYFIN_PublishedServerUrl=http://localhost:8096
 
   caddy:
     image: caddy:latest
     container_name: caddy
     ports:
-      - "80:80"
-      - "443:443"
+      - 80:80
+      - 443:443
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - jellyfin
-    networks:
-      - caddy_net
+      - ${CONFIG_DIR}/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ${CONFIG_DIR}/caddy/data:/data
+      - ${CONFIG_DIR}/caddy/config:/config
     restart: unless-stopped
-
-volumes:
-  caddy_data:
-  caddy_config:
-
-networks:
-  caddy_net:
-    driver: bridge
 EOF
 }
 
-# Configuración del archivo hosts local
-configure_hosts() {
-    log_info "Configurando entrada en /etc/hosts"
-    if ! grep -q "$DOMAIN" /etc/hosts; then
-        echo "127.0.0.1 $DOMAIN" | sudo tee -a /etc/hosts
-    fi
+# Crear Caddyfile
+create_caddyfile() {
+    log_info "Creando Caddyfile"
+    cat > "${CONFIG_DIR}/caddy/Caddyfile" <<'EOF'
+{
+    # Usar un certificado autofirmado interno para desarrollo
+    local_certs
 }
 
-# Verificaciones y preparación
-prepare_environment() {
-    # Verifica si existe el directorio
-    if [ -d "$DIR_PROJECT" ]; then
-        log_info "El directorio $DIR_PROJECT ya existe"
-        if [ "$(ls -A $DIR_PROJECT)" ]; then
-            log_info "Limpiando el directorio de trabajo"
-            cd $DIR_PROJECT && rm -rf *
-        fi
-    else
-        log_info "Creando el directorio de trabajo"
-        sudo mkdir -p $DIR_PROJECT
-    fi
-
-    cd $DIR_PROJECT || log_error "No se pudo acceder al directorio $DIR_PROJECT"
+# Proxy inverso para Jellyfin
+localhost:443 {
+    reverse_proxy localhost:8096
+    tls internal
 }
 
-# Pasos principales
-main() {
-    # Preparar el entorno
-    prepare_environment
+:80 {
+    redir https://{host}{uri} permanent
+}
+EOF
+}
 
-    # Crear archivos de configuración
-    jellyfin_installation
-    create_caddyfile
-    create_docker_compose
-
-    # Crear carpetas de configuración
-    log_info "Creando carpetas de configuración de Jellyfin y Caddy"
-    mkdir -p jellyfin_config media
-
-    # Configurar hosts local
-    configure_hosts
-
+# Instalar Docker y Docker Compose si no están instalados
+install_docker() {
+    log_info "Verificando e instalando Docker y Docker Compose"
+    
     # Verificar Docker
     if ! command -v docker &> /dev/null; then
-        log_error "Docker no está instalado. Por favor, instala Docker y vuelve a intentar."
+        log_warning "Docker no está instalado. Iniciando instalación..."
+        
+        # Desinstalar versiones antiguas
+        apt-get remove -y docker docker-engine docker.io containerd runc
+        
+        # Preparar repositorio
+        apt-get update
+        apt-get install -y \
+            ca-certificates \
+            curl \
+            gnupg \
+            lsb-release
+
+        # Añadir clave GPG oficial de Docker
+        mkdir -p /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+        # Configurar repositorio
+        echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+          $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+        # Instalar Docker Engine
+        apt-get update
+        apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     fi
 
     # Verificar Docker Compose
-    if ! command -v docker-compose &> /dev/null && ! command -v docker compose &> /dev/null; then
-        log_error "Docker Compose no está instalado. Por favor, instala Docker Compose y vuelve a intentar."
+    if ! command -v docker-compose &> /dev/null; then
+        log_warning "Docker Compose no está instalado. Instalando..."
+        curl -SL https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
     fi
 
-    # Detener contenedores existentes
-    log_info "Deteniendo contenedores existentes si están en ejecución..."
-    docker-compose down 2>/dev/null || docker compose down 2>/dev/null || true
-
-    # Levantar los contenedores
-    log_info "Levantando Jellyfin y Caddy con Docker Compose..."
-    docker-compose up -d || docker compose up -d
-
-    # Verificar contenedores
-    sleep 5
-    if docker ps | grep -q "jellyfin" && docker ps | grep -q "caddy"; then
-        log_info "✅ La instalación ha finalizado. Accede a Jellyfin en: https://$DOMAIN"
-        log_info "Recuerda añadir $DOMAIN al archivo /etc/hosts si no lo has hecho"
-    else
-        log_error "❌ Hubo un problema al iniciar los contenedores. Revisa los logs con: docker logs caddy"
-    fi
-
-    # Mostrar logs de Caddy
-    log_info "Mostrando los logs de Caddy para verificación:"
-    docker logs caddy
+    # Habilitar Docker al inicio
+    systemctl enable docker
 }
 
-# Ejecutar el script principal
+# Iniciar servicios
+start_services() {
+    log_info "Iniciando servicios de Jellyfin y Caddy"
+    cd "${BASE_DIR}"
+    docker-compose up -d
+}
+
+# Función principal
+main() {
+    # Verificar sudo
+    check_sudo
+
+    # Limpiar pantalla
+    clear
+
+    log_info "===== Instalación de Jellyfin Local ====="
+    
+    # Instalar Docker
+    install_docker
+
+    # Preparar directorios
+    prepare_directories
+
+    # Crear configuraciones
+    create_docker_compose
+    create_caddyfile
+
+    # Iniciar servicios
+    start_services
+
+    # Mensaje final
+    log_info "Instalación completada. Accede a Jellyfin en:"
+    log_info "- http://localhost:8096"
+    log_info "- https://localhost (con certificado autofirmado)"
+}
+
+# Ejecutar script principal
 main
