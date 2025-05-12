@@ -1,24 +1,19 @@
 #!/bin/bash
 # Archivo de log
 LOGFILE="/var/log/Project/jellyfin_installation.log"
-DOMAIN="jellyfin.fatlangang.com"
+DOMAIN="jellyfin.local"
 DIR_PROJECT="/etc/jellyfin-caddy"
-EMAIL="fatlangang@proton.me"
+EMAIL="admin@localhost"
 
 # Función para escribir errores en el log y mostrar el mensaje en rojo
 log_error() {
-    # Registrar el error en el archivo de log
     echo "$(date) - ERROR: $1" | tee -a $LOGFILE
-    # Mostrar el error en la terminal en rojo
     echo -e "\033[31m$(date) - ERROR: $1\033[0m"
-    # Detener la ejecución del script
     exit 1
 }
 
 log_info() {
-    # Registrar el mensaje informativo en el archivo de log
     echo "$(date) - INFO: $1" | tee -a $LOGFILE
-    # Mostrar el mensaje en la terminal en azul
     echo -e "\033[34m$(date) - INFO: $1\033[0m"
 }
 
@@ -32,14 +27,18 @@ EOF
 }
 
 create_caddyfile() {
-    # ==== Caddyfile ====
-    log_info "Creando archivo Caddyfile"
-    # Importante: Se ha corregido la sintaxis del Caddyfile y se evita la expansión de variables
+    # ==== Caddyfile para entorno local ====
+    log_info "Creando archivo Caddyfile para entorno local"
     cat > Caddyfile <<EOF
 $DOMAIN {
+    # Proxy a Jellyfin
     reverse_proxy jellyfin:8096
-    encode gzip
-    tls $EMAIL
+    
+    # Deshabilitar HTTPS para entorno local
+    @local host $DOMAIN
+    
+    # Configuración para desarrollo local
+    tls internal
 }
 EOF
 }
@@ -88,59 +87,79 @@ networks:
 EOF
 }
 
-# Verifica si existe el directorio
-if [ -d "$DIR_PROJECT" ]; then
-  log_info "El directorio $DIR_PROJECT ya existe"
-  # Verifica si hay archivos
-  if [ "$(ls -A $DIR_PROJECT)" ]; then
-    log_info "Limpiando el directorio de trabajo"
-    cd $DIR_PROJECT && rm -rf *
-  else
-    log_info "Directorio de trabajo vacío"
+# Configuración del archivo hosts local
+configure_hosts() {
+    log_info "Configurando entrada en /etc/hosts"
+    if ! grep -q "$DOMAIN" /etc/hosts; then
+        echo "127.0.0.1 $DOMAIN" | sudo tee -a /etc/hosts
+    fi
+}
+
+# Verificaciones y preparación
+prepare_environment() {
+    # Verifica si existe el directorio
+    if [ -d "$DIR_PROJECT" ]; then
+        log_info "El directorio $DIR_PROJECT ya existe"
+        if [ "$(ls -A $DIR_PROJECT)" ]; then
+            log_info "Limpiando el directorio de trabajo"
+            cd $DIR_PROJECT && rm -rf *
+        fi
+    else
+        log_info "Creando el directorio de trabajo"
+        sudo mkdir -p $DIR_PROJECT
+    fi
+
     cd $DIR_PROJECT || log_error "No se pudo acceder al directorio $DIR_PROJECT"
-  fi
-# Crea el directorio de trabajo
-else
-    log_info "Creando el directorio de trabajo"
-    mkdir -p $DIR_PROJECT
-    cd $DIR_PROJECT || log_error "No se pudo acceder al directorio $DIR_PROJECT"
-fi
+}
 
-# Ejecutando las funciones para crear los archivos
-jellyfin_installation
-create_caddyfile
-create_docker_compose
+# Pasos principales
+main() {
+    # Preparar el entorno
+    prepare_environment
 
-# Crear carpetas de configuración
-log_info "Creando carpetas de configuración de Jellyfin y Caddy"
-mkdir -p jellyfin_config media
+    # Crear archivos de configuración
+    jellyfin_installation
+    create_caddyfile
+    create_docker_compose
 
-# Verificar si Docker está instalado
-if ! command -v docker &> /dev/null; then
-    log_error "Docker no está instalado. Por favor, instala Docker y vuelve a intentar."
-fi
+    # Crear carpetas de configuración
+    log_info "Creando carpetas de configuración de Jellyfin y Caddy"
+    mkdir -p jellyfin_config media
 
-# Verificar Docker Compose (compatible con versiones más recientes)
-if ! command -v docker-compose &> /dev/null && ! command -v docker compose &> /dev/null; then
-    log_error "Docker Compose no está instalado. Por favor, instala Docker Compose y vuelve a intentar."
-fi
+    # Configurar hosts local
+    configure_hosts
 
-# Detener contenedores existentes si están en ejecución
-log_info "Deteniendo contenedores existentes si están en ejecución..."
-docker-compose down 2>/dev/null || docker compose down 2>/dev/null || true
+    # Verificar Docker
+    if ! command -v docker &> /dev/null; then
+        log_error "Docker no está instalado. Por favor, instala Docker y vuelve a intentar."
+    fi
 
-# Levantar los contenedores
-log_info "Levantando Jellyfin y Caddy con Docker Compose..."
-docker-compose up -d || docker compose up -d
+    # Verificar Docker Compose
+    if ! command -v docker-compose &> /dev/null && ! command -v docker compose &> /dev/null; then
+        log_error "Docker Compose no está instalado. Por favor, instala Docker Compose y vuelve a intentar."
+    fi
 
-# Verificar que los contenedores estén en ejecución
-sleep 5
-if docker ps | grep -q "jellyfin" && docker ps | grep -q "caddy"; then
-    log_info "✅ La instalación ha finalizado. Accede a Jellyfin en: https://$DOMAIN"
-else
-    log_error "❌ Hubo un problema al iniciar los contenedores. Revisa los logs con: docker logs caddy"
-fi
+    # Detener contenedores existentes
+    log_info "Deteniendo contenedores existentes si están en ejecución..."
+    docker-compose down 2>/dev/null || docker compose down 2>/dev/null || true
 
-# Mostrar los logs de Caddy para depuración
-log_info "Mostrando los logs de Caddy para verificar la configuración:"
-docker logs caddy
+    # Levantar los contenedores
+    log_info "Levantando Jellyfin y Caddy con Docker Compose..."
+    docker-compose up -d || docker compose up -d
+
+    # Verificar contenedores
+    sleep 5
+    if docker ps | grep -q "jellyfin" && docker ps | grep -q "caddy"; then
+        log_info "✅ La instalación ha finalizado. Accede a Jellyfin en: https://$DOMAIN"
+        log_info "Recuerda añadir $DOMAIN al archivo /etc/hosts si no lo has hecho"
+    else
+        log_error "❌ Hubo un problema al iniciar los contenedores. Revisa los logs con: docker logs caddy"
+    fi
+
+    # Mostrar logs de Caddy
+    log_info "Mostrando los logs de Caddy para verificación:"
+    docker logs caddy
+}
+
+# Ejecutar el script principal
+main
