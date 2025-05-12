@@ -5,6 +5,7 @@ PROJECT_NAME="jellyfin-local"
 BASE_DIR="/opt/${PROJECT_NAME}"
 CONFIG_DIR="${BASE_DIR}/config"
 MEDIA_DIR="${BASE_DIR}/media"
+SERVER_IP="172.30.15.119"
 
 # Colores para la salida
 RED='\033[0;31m'
@@ -40,35 +41,43 @@ prepare_directories() {
     log_info "Preparando directorios de configuración y medios"
     mkdir -p "${CONFIG_DIR}/jellyfin"
     mkdir -p "${CONFIG_DIR}/caddy"
+    mkdir -p "${CONFIG_DIR}/caddy/data"
+    mkdir -p "${CONFIG_DIR}/caddy/config"
     mkdir -p "${MEDIA_DIR}"
+    
+    # Crear Caddyfile si no existe
+    touch "${CONFIG_DIR}/caddy/Caddyfile"
     
     # Establecer permisos
     chown -R 1000:1000 "${CONFIG_DIR}/jellyfin"
+    chown -R 1000:1000 "${CONFIG_DIR}/caddy"
     chown -R 1000:1000 "${MEDIA_DIR}"
 }
 
 # Crear Docker Compose
 create_docker_compose() {
     log_info "Creando archivo docker-compose.yml"
-    cat > "${BASE_DIR}/docker-compose.yml" <<'EOF'
+    cat > "${BASE_DIR}/docker-compose.yml" <<EOF
 version: '3.8'
 services:
   jellyfin:
     image: jellyfin/jellyfin:latest
-    container_name: jellyfin
-    user: 1000:1000
-    network_mode: host
+    container_name: jellyfin_app
     volumes:
       - ${CONFIG_DIR}/jellyfin:/config
       - ${MEDIA_DIR}:/media
       - /etc/localtime:/etc/localtime:ro
+    ports:
+      - 8096:8096
+    networks:
+      - jellyfin_network
     restart: unless-stopped
     environment:
-      - JELLYFIN_PublishedServerUrl=http://localhost:8096
+      - JELLYFIN_PublishedServerUrl=http://${SERVER_IP}:8096
 
   caddy:
     image: caddy:latest
-    container_name: caddy
+    container_name: caddy_proxy
     ports:
       - 80:80
       - 443:443
@@ -76,27 +85,30 @@ services:
       - ${CONFIG_DIR}/caddy/Caddyfile:/etc/caddy/Caddyfile
       - ${CONFIG_DIR}/caddy/data:/data
       - ${CONFIG_DIR}/caddy/config:/config
+    networks:
+      - jellyfin_network
     restart: unless-stopped
+    depends_on:
+      - jellyfin
+
+networks:
+  jellyfin_network:
+    driver: bridge
 EOF
 }
 
 # Crear Caddyfile
 create_caddyfile() {
     log_info "Creando Caddyfile"
-    cat > "${CONFIG_DIR}/caddy/Caddyfile" <<'EOF'
-{
-    # Usar un certificado autofirmado interno para desarrollo
-    local_certs
-}
-
-# Proxy inverso para Jellyfin
-localhost:443 {
-    reverse_proxy localhost:8096
+    cat > "${CONFIG_DIR}/caddy/Caddyfile" <<EOF
+${SERVER_IP} {
+    reverse_proxy jellyfin_app:8096
+    encode gzip
     tls internal
 }
 
-:80 {
-    redir https://{host}{uri} permanent
+http://${SERVER_IP} {
+    redir https://${SERVER_IP}{uri} permanent
 }
 EOF
 }
@@ -162,9 +174,6 @@ main() {
 
     log_info "===== Instalación de Jellyfin Local ====="
     
-    # Instalar Docker
-    install_docker
-
     # Preparar directorios
     prepare_directories
 
@@ -172,13 +181,16 @@ main() {
     create_docker_compose
     create_caddyfile
 
+    # Instalar Docker
+    install_docker
+
     # Iniciar servicios
     start_services
 
     # Mensaje final
     log_info "Instalación completada. Accede a Jellyfin en:"
-    log_info "- http://localhost:8096"
-    log_info "- https://localhost (con certificado autofirmado)"
+    log_info "- http://${SERVER_IP}:8096"
+    log_info "- https://${SERVER_IP}"
 }
 
 # Ejecutar script principal
