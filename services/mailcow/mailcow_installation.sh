@@ -39,12 +39,14 @@ if ! git clone https://github.com/mailcow/mailcow-dockerized.git; then
     log_info "Error al descargar el repositorio de mailcow"
 fi
 
+mv mailcow-dockerized ../
+
 log_info "generando archivo de configuracion..."
-if ! ./mailcow-dockerized/generate_config.sh; then
+if ! ../mailcow-dockerized/generate_config.sh; then
     log_info "Error al generar el archivo de configuracion"
 fi
 
 log_info "Iniciando mailcow..."
-if ! docker compose -f ./mailcow-dockerized/docker-compose.yml up -d; then
+if ! docker compose -f ../mailcow-dockerized/docker-compose.yml up -d; then
     log_info "Error al iniciar mailcow"
 fi
