@@ -54,6 +54,14 @@ if ! ./generate_config.sh; then
     log_info "Error al generar el archivo de configuracion"
 fi
 
+cat <<EOF >> /etc/mailcow-docker-config/mailcow-dockerized/data/conf/unbound/unbound.conf
+forward-zone:
+  name: "."
+  forward-addr: 172.31.9.254
+  forward-addr: 172.31.9.255
+EOF
+
+
 log_info "Iniciando mailcow..."
 if ! docker compose -f ./docker-compose.yml up -d; then
     log_info "Error al iniciar mailcow"
