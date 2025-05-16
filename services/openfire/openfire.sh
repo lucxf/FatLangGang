@@ -2,7 +2,7 @@
 
 # Archivo de log
 LOGFILE="/var/log/Project/openfire_installation.log"
-WORK_DIR="~/openfire"
+WORK_DIR="/home/root/openfire"
 
 # Función para escribir errores en el log y mostrar el mensaje en rojo
 log_error() {
