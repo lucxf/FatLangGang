@@ -26,8 +26,9 @@ log_info "creando directorio de instalacion ..."
 mkdir -p $WORK_DIR
 cd $WORK_DIR
 
-sudo apt update
+sudo apt update -y && apt upgrade -y
 sudo apt install default-jre-headless -y
+
 
 log_info "Descargando el repositorio de openfire..."
 if ! wget https://www.igniterealtime.org/downloadServlet?filename=openfire/openfire_4.7.5_all.deb -O openfire.deb; then
