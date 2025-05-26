@@ -10,8 +10,8 @@ log_error() {
     # Mostrar el error en la terminal en rojo
     echo -e "\033[31m$(date) - ERROR: $1\033[0m"
     # Borrar la instalación de Webmin
-    chmod +x ./tools/webmin/uninstall_webmin/uninstall_webmin.sh
-    sudo ./tools/webmin/uninstall_webmin/uninstall_webmin.sh
+    chmod +x ./tools/webmin/uninstall_webmin.sh
+    sudo ./tools/webmin/uninstall_webmin.sh
     # Detener la ejecución del script
     exit 1
 }
