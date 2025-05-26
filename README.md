@@ -28,13 +28,13 @@ Estos componentes son fundamentales para gestionar el entorno y facilitar la ope
 
 Esta carpeta contiene los scripts de instalación de los principales servicios que ofrece Fatlangang:
 
-    · **Jellyfin**: Servidor multimedia para streaming local.
+· **Jellyfin**: Servidor multimedia para streaming local.
 
-    · **Openfire**: Servidor de mensajería instantánea basado en XMPP.
+· **Openfire**: Servidor de mensajería instantánea basado en XMPP.
 
-    · **Mailcow**: Solución completa de servidor de correo electrónico, ideal para empresas.
+· **Mailcow**: Solución completa de servidor de correo electrónico, ideal para empresas.
 
-    · **FreePBX**: Plataforma de comunicaciones unificadas y VoIP basada en Asterisk, para centralitas telefónicas.
+· **FreePBX**: Plataforma de comunicaciones unificadas y VoIP basada en Asterisk, para centralitas telefónicas.
 
 Cada script en esta carpeta está diseñado para simplificar la instalación de estos servicios, incluyendo dependencias, configuración base y puesta en marcha inicial.
 
